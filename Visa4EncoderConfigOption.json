@@ -1,0 +1,167 @@
+{
+    "_comments": [
+        "DISCLAIMER:  Work in process, not complete, just an initial proof-of-concept for discussion purposes.",
+        "",
+        "In the current Digital Rapids sytstem, each visa encoder instance has it's own configuration file.",
+        "In the new Magwell/FFMPEG system, we will have multiple visa encoders running on a single VISA server, and they will share some ",
+        "common settings and resources, like the Magwell capture cards.",
+        "If we continue with a config file per encoder instance it means that there's some coordination that needs to happen so that multiple encoder instances",
+        "don't try to use the same source.  It also means that the config for a visa encoder SERVER is split across multiple config files.",
+        "",
+        "It might be nice if we had a single config file, that defined the overall configuration for a given visa SERVER, and all the encoder instances on",
+        "that server loaded their config from one file.  This would make it easier to see an overview of how the magwell sources were configured and assigned ",
+        "to encoder instances.  It would also allow us to eliminate some redundancy in the configuration.",
+        "",
+        "So...This (example, prototype, incomplete) file demonstratates how we might configuration the VISA SYSTEM on a single visa encoder server.",
+        "This example is for a visa server that has a Quad 2K card and a 4K card allocated to 3 visa encoders instances. ",
+        "",
+        "At startp, each visa encoder instance would be given an instanceId, like we do today....encoderConsole --instance=1",
+        "Each encoder instance would load up this file and pull all the common encoder config setting from here as well as any instance specific settings.",
+        "Each encoder instance would go through the magwell-cards/sources to find the sources that are assigned to that encoder.",
+        "Each encoder instance would pull the config data it needs for it's sources from this file.",
+        "",
+        "If we have a separate process that only creates the Proxy streams (so they always run, and the VISA encoder instances don't have to), that process",
+        "could also load the source config from this same file.",
+        "",
+        "PS:  I haven't compared this to the existing encoder config yet, something is probably missing.",
+        ""
+    ],
+    "visaServer": {
+        "general": {
+            "_comment": [
+                "This section contains general settings that can be shared across all encoder instances, and default values (that can be overriden in ",
+                "other parts of the config.)",
+                "Might be nice if this part of the config could be shared across different encoder server config files....maybe"
+            ],
+            "poolManager": "PoolManager address",
+            "store": "C:\\store  -- where do we put files",
+            "otherSharedSettings": "TBD...",
+            "default2KProfile": "2K Standard --  Use this for 2K sources unless the source config below overrides it.",
+            "default4KProfile": "4K Standard --  Use this for 4K sources unless the source config below overrides it.",
+            "defaultProxyProfile": "Proxy Standard --  Use this for proxy profile unless the source config below overrides it."
+        },
+        "encoderInstances": [
+            {
+                "id": "1 -- Configuration settings specific to encoder instance 1",
+                "otherSettings": "TBD As Required"
+            },
+            {
+                "id": "2 -- Configuration settings specific to encoder instance 2",
+                "otherSettings": "TBD As Required"
+            },
+            {
+                "id": "3 -- Configuration settings specific to encoder instance 3",
+                "otherSettings": "TBD As Required"
+            }
+        ],
+        "captureCards": [
+            {
+                "type": "Magwell",
+                "id": "Some sort of reference id for card 1 (w/ 4-2K Sources)",
+                "sources": [
+                    {
+                        "id": "some sort of reference id for card 1, source 1",
+                        "headend": "DTV Seattle",
+                        "receiverId": "S1 --- AMX device id for the receiver for this source",
+                        "ccPort": "COM1 -- The Serial port used to capture CC for this source",
+                        "encoderInstance": "1 -- This source is used by VISA Encoder instance 1 on this server",
+                        "headendPriority": "2 -- This defines the headend priority of this source on the encoder instance.",
+                        "quality": [
+                            "2K"
+                        ],
+                        "qcStreamPort": "4001 -- the port used for the QC stream",
+                        "proxyStreamPort": "5001 -- the port used for the proxy stream",
+                        "_comment": "Since we don't specify the profiles explicitly, use the default 2K profile defined above.",
+                        "defaultChannel": "42 -- Channel we tune to between recordings.",
+                        "receiverResetInterval": {
+                            "_comment": "Settings related to automatically rebooting receivers."
+                        }
+                    },
+                    {
+                        "id": "some sort of reference id for card 1, source 2",
+                        "headend": "BELL",
+                        "receiverId": "S2 --- AMX device id for the receiver for this source",
+                        "ccPort": "COM2 -- The Serial port used to capture CC for this source",
+                        "encoderInstance": "1 -- This source is used by VISA Encoder instance 1 on this server",
+                        "headendPriority": "1 -- BELL takes priority over DTV Seattle on encoder instance 1",
+                        "quality": [
+                            "2K"
+                        ],
+                        "qcStreamPort": "4002 -- the port used for the QC stream",
+                        "proxyStreamPort": "5002 -- the port used for the proxy stream",
+                        "_comment": "Since we don't specify the profiles explicitly, use the default 2K profile defined above.",
+                        "defaultChannel": "42 -- Channel we tune to between recordings.",
+                        "receiverResetInterval": {
+                            "_comment": "Settings related to automatically rebooting receivers."
+                        }
+                    },
+                    {
+                        "id": "some sort of reference id for card 1, source 3",
+                        "headend": "DTV Seattle",
+                        "receiverId": "S3 --- AMX device id for the receiver for this source",
+                        "ccPort": "COM3 -- The Serial port used to capture CC for this source",
+                        "encoderInstance": "2 -- This source is used by VISA Encoder instance 2 on this server",
+                        "headendPriority": "2 -- This defines the headend priority of this source on the encoder instance.",
+                        "quality": [
+                            "2K"
+                        ],
+                        "qcStreamPort": "4003 -- the port used for the QC stream",
+                        "proxyStreamPort": "5003 -- the port used for the proxy stream",
+                        "_comment": "Since we don't specify the profiles explicitly, use the default 2K profile defined above.",
+                        "defaultChannel": "42 -- Channel we tune to between recordings.",
+                        "receiverResetInterval": {
+                            "_comment": "Settings related to automatically rebooting receivers."
+                        }
+                    },
+                    {
+                        "id": "some sort of reference id for card 1, source 4",
+                        "headend": "Comcast",
+                        "receiverId": "S4 --- AMX device id for the receiver for this source",
+                        "ccPort": "COM4 -- The Serial port used to capture CC for this source",
+                        "encoderInstance": "2 -- This source is used by VISA Encoder instance 1 on this server",
+                        "headendPriority": "2 -- This defines the headend priority of this source on the encoder instance.",
+                        "quality": [
+                            "2K"
+                        ],
+                        "qcStreamPort": "4004 -- the port used for the QC stream",
+                        "proxyStreamPort": "5004 -- the port used for the proxy stream",
+                        "_comment": "Override both the profiles for this source....",
+                        "profile": "2K Alternate  -- The profile to use when recording from this source",
+                        "proxyProfile": "Proxy Alternate -- The profile to use for the proxy stream.",
+                        "defaultChannel": "42 -- Channel we tune to between recordings.",
+                        "receiverResetInterval": {
+                            "_comment": "Settings related to automatically rebooting receivers."
+                        }
+                    }
+                ]
+            },
+            {
+                "type": "Magwell",
+                "id": "Some sort of reference id for card 2 (w/ 1-4K source)",
+                "sources": [
+                    {
+                        "id": "some sort of reference id for card 2, source 1",
+                        "headend": "DTV Seattle",
+                        "receiverId": "S5 --- AMX device id for the receiver for this source",
+                        "ccPort": "COM5 -- The Serial port used to capture CC for this source",
+                        "encoderInstance": "3 -- This source is used by VISA Encoder instance 3 on this server",
+                        "headendPriority": "1 -- This defines the headend priority of this source on the encoder instance.",
+                        "quality": [
+                            "4K",
+                            "2K",
+                            "Comment:  This source can be used for either 2K or 4K recordings, priority given to 4K."
+                        ],
+                        "qcStreamPort": "4005 -- the port used for the QC stream",
+                        "proxyStreamPort": "5005 -- the port used for the proxy stream",
+                        "_comment": "Use the default 4K/2K profile defined aboove, but override the proxy profile for this source, just because.",
+                        "proxyProfile": "Proxy Alternate -- The profile to use for the proxy stream.",
+                        "defaultChannel": "42 -- Channel we tune to between recordings.",
+                        "receiverResetInterval": {
+                            "_comment": "Settings related to automatically rebooting receivers."
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
